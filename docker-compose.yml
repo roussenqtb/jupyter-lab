@@ -1,0 +1,40 @@
+version: '3'
+
+networks:
+  roussenq:
+    external: false
+
+services:
+  jupyter:
+    image: jupyter/pyspark-notebook
+    container_name: jupyter
+    hostname: jupyter
+    build:
+      context: .
+      dockerfile: docker/dockerfile
+    env_file: .env          
+    #entrypoint: python3 -m debugpy --wait-for-client --listen 0.0.0.0:5679 ./ValidacaoDW.py          
+    #volumes:
+    #  - /mnt/d/volume/jupyterlab:/home/jovyan/notebooks
+    ports:
+      - "8888:8888"
+    depends_on:
+      - minio
+    command: start.sh jupyter lab --LabApp.base_url=/ --LabApp.token='token'
+    networks:
+      - roussenq    
+  minio:
+    image: "minio/minio:latest"
+    container_name: minio
+    hostname: minio
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    command: server /data --console-address ":9001"
+    #volumes:
+    #  - /mnt/d/volume/minio:/data    
+    environment:
+      MINIO_ACCESS_KEY: minio
+      MINIO_SECRET_KEY: minio123
+    networks:
+      - roussenq  
